@@ -66,6 +66,14 @@ const initGame = (canvas: HTMLCanvasElement) => {
 
     if (distanceToBone < 50) {
       const xDist = bone.getPosition().x - pug.getPosition().x;
+      const yDist = bone.getPosition().y - pug.getPosition().y;
+
+      if (yDist < 0 && yDist > -20 && Math.abs(xDist) < 10) {
+        console.log("jump");
+        pug.jump(true);
+      } else {
+        pug.jump(false);
+      }
       pug.setSpeed(xDist / 10);
     }
 

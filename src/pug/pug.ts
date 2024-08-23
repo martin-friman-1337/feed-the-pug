@@ -7,6 +7,7 @@ export const createPug = (position: Position) => {
   let speed = 0;
   let dir = 1;
   let stillTime = 1000;
+  let isJumping = false;
 
   const runSprite = createSprite("./sprites/pug-run.png", 16, 16, 3, 80);
   const runningPug = createGameObject(runSprite);
@@ -20,6 +21,11 @@ export const createPug = (position: Position) => {
     createSprite("./sprites/pug-sit.png", 16, 16, 2, 400)
   );
   sittingPug.setPosition(position);
+
+  const jumpingPug = createGameObject(
+    createSprite("sprites/pug-jump.png", 16, 16, 4, 100)
+  );
+  jumpingPug.setPosition(position);
 
   const setSpeed = (newSpeed: number) => {
     speed = newSpeed;
@@ -39,6 +45,10 @@ export const createPug = (position: Position) => {
   };
 
   const render = (ctx: CanvasRenderingContext2D) => {
+    if (isJumping) {
+      pug = jumpingPug;
+    }
+
     if (speed !== 0) {
       stillTime = 0;
     } else {
@@ -55,6 +65,10 @@ export const createPug = (position: Position) => {
     }
   };
 
+  const jump = (shouldJump: boolean) => {
+    isJumping = shouldJump;
+  };
+
   const getPosition = () => {
     if (!pug) return { x: 0, y: 0 };
     return pug.getPosition();
@@ -65,5 +79,6 @@ export const createPug = (position: Position) => {
     getSpeed,
     render,
     getPosition,
+    jump,
   };
 };
