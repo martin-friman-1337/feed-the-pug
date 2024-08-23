@@ -27,7 +27,7 @@ const initGame = (canvas: HTMLCanvasElement) => {
 
   const pug = createPug({
     x: Math.floor(canvas.width / 2) - 8,
-    y: canvas.height - 110,
+    y: 286,
   });
 
   const level = createLevel();
