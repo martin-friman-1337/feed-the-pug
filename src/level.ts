@@ -23,6 +23,14 @@ export const createLevel = () => {
     y: 286,
   });
 
+  const coin = createGameObject(
+    createSprite("./sprites/coin.png", 8, 8, 8, 100)
+  );
+  coin.setPosition({
+    x: 300,
+    y: 286,
+  });
+
   let speed = 0;
 
   for (let i = 0; i < 10; i++) {
@@ -47,6 +55,12 @@ export const createLevel = () => {
       y: turd.getPosition().y,
     });
     turd.render(ctx);
+
+    coin.setPosition({
+      x: coin.getPosition().x - speed,
+      y: coin.getPosition().y,
+    });
+    coin.render(ctx);
 
     groundObjects.forEach((ground) => {
       ground.setPosition({
