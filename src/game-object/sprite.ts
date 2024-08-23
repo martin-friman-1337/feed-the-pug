@@ -1,4 +1,4 @@
-import { Sprite } from "./types/sprite";
+import { Sprite } from "../types/sprite";
 
 export const createSprite = (
   src: string,

@@ -1,5 +1,5 @@
-import { GameObject, Position } from "./types/game-object";
-import { Sprite } from "./types/sprite";
+import { GameObject, Position } from "../types/game-object";
+import { Sprite } from "../types/sprite";
 
 export const createGameObject = (sprite: Sprite): GameObject => {
   let position: Position = { x: 0, y: 0 };

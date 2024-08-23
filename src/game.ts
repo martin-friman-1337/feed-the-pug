@@ -1,14 +1,17 @@
-import { createGameObject } from "./game-object";
+import { createGameObject } from "./game-object/object";
+import { createSprite } from "./game-object/sprite";
 import { createLevel } from "./level";
 import { createPug } from "./pug/pug";
-import { createSprite } from "./sprite";
+
+const getCtx = (canvas: HTMLCanvasElement) => {
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = false;
+
+  return ctx;
+};
 
 const initGame = (canvas: HTMLCanvasElement) => {
-  const ctx = canvas.getContext("2d");
-
-  if (!ctx) return;
-
-  ctx.imageSmoothingEnabled = false;
+  const ctx = getCtx(canvas);
 
   const mousePosition = {
     x: 0,
@@ -22,33 +25,18 @@ const initGame = (canvas: HTMLCanvasElement) => {
 
   canvas.addEventListener("mousemove", handleMouseMove);
 
-  ctx.imageSmoothingEnabled = false;
-
-  const pugPosition = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-  };
-
-  // Create the pug
   const pug = createPug({
-    x: Math.floor(canvas.width / 2),
+    x: Math.floor(canvas.width / 2) - 8,
     y: canvas.height - 110,
   });
 
-  // Create the level
   const level = createLevel();
 
   const bone = createGameObject(
     createSprite("./sprites/bone.png", 15, 7, 1, 100)
   );
-  bone.setPosition({
-    x: 100,
-    y: 100,
-  });
 
-  const loop = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  const update = () => {
     bone.setPosition({
       x:
         (canvas.width * mousePosition.x) / window.innerWidth -
@@ -57,7 +45,6 @@ const initGame = (canvas: HTMLCanvasElement) => {
     });
 
     const speed = pug.getSpeed();
-    pugPosition.x -= speed;
 
     const distanceToBone = Math.sqrt(
       (pug.getPosition().x - bone.getPosition().x) ** 2 +
@@ -68,12 +55,8 @@ const initGame = (canvas: HTMLCanvasElement) => {
       const xDist = bone.getPosition().x - pug.getPosition().x;
       const yDist = bone.getPosition().y - pug.getPosition().y;
 
-      if (yDist < 0 && yDist > -20 && Math.abs(xDist) < 10) {
-        console.log("jump");
-        pug.jump(true);
-      } else {
-        pug.jump(false);
-      }
+      pug.jump(yDist < 0 && yDist > -20 && Math.abs(xDist) < 10);
+
       pug.setSpeed(xDist / 10);
     }
 
@@ -82,37 +65,23 @@ const initGame = (canvas: HTMLCanvasElement) => {
     if (Math.abs(newSpeed) < 0.2) newSpeed = 0;
 
     pug.setSpeed(newSpeed);
-
-    // console.log(distanceToBone);
-
     level.setSpeed(speed);
+  };
+
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     level.render(ctx);
     pug.render(ctx);
     bone.render(ctx);
+  };
+
+  const loop = () => {
+    update();
+    draw();
 
     requestAnimationFrame(loop);
   };
-
-  window.addEventListener(
-    "keydown",
-    (event: KeyboardEvent) => {
-      console.log(event.key);
-
-      if (event.key === "ArrowLeft") {
-        pug.setSpeed(-2);
-      } else if (event.key === "ArrowRight") {
-        pug.setSpeed(2);
-      }
-    },
-    false
-  );
-
-  window.addEventListener("keyup", (event: KeyboardEvent) => {
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-      pug.setSpeed(0);
-    }
-  });
 
   loop();
 };

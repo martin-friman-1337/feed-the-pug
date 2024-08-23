@@ -1,5 +1,5 @@
-import { createGameObject } from "./game-object";
-import { createSprite } from "./sprite";
+import { createGameObject } from "./game-object/object";
+import { createSprite } from "./game-object/sprite";
 import { GameObject } from "./types/game-object";
 
 export const createLevel = () => {
