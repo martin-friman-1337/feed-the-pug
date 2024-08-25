@@ -77,10 +77,11 @@ const initGame = (canvas: HTMLCanvasElement) => {
   };
 
   const loop = () => {
-    update();
-    draw();
-
-    requestAnimationFrame(loop);
+    setTimeout(() => {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }, 1000 / 60);
   };
 
   loop();
