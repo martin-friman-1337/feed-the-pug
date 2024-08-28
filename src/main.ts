@@ -1,7 +1,12 @@
+import { registerEventListeners } from "./events-manager/events";
 import { initGame } from "./game";
 
+
+
 const app = document.getElementById("app");
+
 if (app) {
+
   const canvas = document.createElement("canvas");
 
   canvas.width = (window.innerWidth / 5) * devicePixelRatio;
@@ -12,7 +17,8 @@ if (app) {
 
   canvas.style.imageRendering = "pixelated";
 
-  app.append(canvas);
-
+  app.append(canvas);''
+  registerEventListeners();
   initGame(canvas);
+
 }

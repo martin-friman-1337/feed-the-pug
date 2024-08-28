@@ -2,8 +2,12 @@ import { createGameObject } from "./game-object/object";
 import { createSprite } from "./game-object/sprite";
 import { createLevel } from "./level";
 import { createPug } from "./pug/pug";
+import { socket } from "./socketio-client";
+import { ConnectedClient } from "./socketio-client/types";
+import { currentlyConnectedClients } from "./stores/players";
+import {LocationData} from './socketio-client/types';
 
-const getCtx = (canvas: HTMLCanvasElement) => {
+export const getCtx = (canvas: HTMLCanvasElement) => {
   const ctx = canvas.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
 
@@ -37,13 +41,15 @@ const initGame = (canvas: HTMLCanvasElement) => {
   );
 
   const update = () => {
+        //broadcast my location    
+    console.log(pug.getPosition());
+    socket.emit("broadcastMyLocation", {...pug.getPosition(), playerId:socket.id } as LocationData);
     bone.setPosition({
       x:
         (canvas.width * mousePosition.x) / window.innerWidth -
         bone.sprite.width / 2,
       y: (canvas.height * mousePosition.y) / window.innerHeight,
     });
-
     const speed = pug.getSpeed();
 
     const distanceToBone = Math.sqrt(
@@ -72,9 +78,21 @@ const initGame = (canvas: HTMLCanvasElement) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     level.render(ctx);
+
+    //render other players from connected client store
+    currentlyConnectedClients.forEach((client:ConnectedClient)=>{
+      const newPug = createPug({
+        x: client.position.x,
+        y: client.position.y
+      });
+      newPug.render(ctx);
+    });
+
+    //render our players pug
     pug.render(ctx);
     bone.render(ctx);
   };
+
 
   const loop = () => {
     update();
@@ -85,5 +103,9 @@ const initGame = (canvas: HTMLCanvasElement) => {
 
   loop();
 };
+
+
+
+
 
 export { initGame };
