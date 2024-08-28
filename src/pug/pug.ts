@@ -1,6 +1,7 @@
 import { createGameObject } from "../game-object/object";
 import { createSprite } from "../game-object/sprite";
 import { GameObject, Position } from "../types/game-object";
+import { Pug } from "../types/pug";
 
 export const createPug = (position: Position) => {
   let pug: GameObject;
@@ -80,5 +81,5 @@ export const createPug = (position: Position) => {
     render,
     getPosition,
     jump,
-  };
+  } as Pug;
 };

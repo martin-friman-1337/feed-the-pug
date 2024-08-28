@@ -60,7 +60,7 @@ export const createLevel = () => {
       x: coin.getPosition().x - speed,
       y: coin.getPosition().y,
     });
-    coin.render(ctx);
+    //  coin.render(ctx);
 
     groundObjects.forEach((ground) => {
       ground.setPosition({

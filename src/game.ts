@@ -1,29 +1,25 @@
 import { createGameObject } from "./game-object/object";
 import { createSprite } from "./game-object/sprite";
+import createTracker from "./hand-tracking/tracker";
 import { createLevel } from "./level";
 import { createPug } from "./pug/pug";
+import { createTreats } from "./treats";
+import { GameObject } from "./types/game-object";
 
 const getCtx = (canvas: HTMLCanvasElement) => {
   const ctx = canvas.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
-
   return ctx;
 };
 
-const initGame = (canvas: HTMLCanvasElement) => {
+const initGame = async (canvas: HTMLCanvasElement) => {
   const ctx = getCtx(canvas);
 
-  const mousePosition = {
-    x: 0,
-    y: 0,
-  };
+  const tracker = await createTracker();
 
-  const handleMouseMove = (event: MouseEvent) => {
-    mousePosition.x = event.clientX;
-    mousePosition.y = event.clientY;
-  };
+  const treats = createTreats();
 
-  canvas.addEventListener("mousemove", handleMouseMove);
+  let treatToPick: GameObject | null = null;
 
   const pug = createPug({
     x: Math.floor(canvas.width / 2) - 8,
@@ -32,39 +28,78 @@ const initGame = (canvas: HTMLCanvasElement) => {
 
   const level = createLevel();
 
-  const bone = createGameObject(
-    createSprite("./sprites/bone.png", 15, 7, 1, 100)
+  const hand = createGameObject(
+    createSprite("./sprites/hand.png", 24, 24, 3, 100, 2, 0, false)
   );
 
   const update = () => {
-    bone.setPosition({
-      x:
-        (canvas.width * mousePosition.x) / window.innerWidth -
-        bone.sprite.width / 2,
-      y: (canvas.height * mousePosition.y) / window.innerHeight,
-    });
+    treats.update(pug);
 
     const speed = pug.getSpeed();
 
-    const distanceToBone = Math.sqrt(
-      (pug.getPosition().x - bone.getPosition().x) ** 2 +
-        (pug.getPosition().y - bone.getPosition().y) ** 2
-    );
+    const pointingFingerPosition = tracker.getPointingFingerPosition();
 
-    if (distanceToBone < 50) {
-      const xDist = bone.getPosition().x - pug.getPosition().x;
-      const yDist = bone.getPosition().y - pug.getPosition().y;
+    hand.setPosition({
+      x: canvas.width * pointingFingerPosition.x,
+      y: canvas.height * pointingFingerPosition.y,
+    });
 
-      pug.jump(yDist < 0 && yDist > -20 && Math.abs(xDist) < 10);
-
-      pug.setSpeed(xDist / 10);
+    if (tracker.isPicking()) {
+      hand.sprite.setCurrentFrame(0);
+    } else {
+      hand.sprite.setCurrentFrame(1);
     }
+
+    if (tracker.isPicking()) {
+      treatToPick =
+        treats.getTreats().find((treat) => {
+          const distanceToTreat = Math.sqrt(
+            (hand.getPosition().x - treat.getPosition().x) ** 2 +
+              (hand.getPosition().y - treat.getPosition().y) ** 2
+          );
+
+          return distanceToTreat < 50;
+        }) || null;
+
+      if (treatToPick) {
+        treatToPick.setPosition({
+          x: hand.getPosition().x,
+          y: hand.getPosition().y + 14,
+        });
+      }
+    }
+
+    if (!tracker.isPicking()) {
+    }
+
+    treats.getTreats().forEach((treat) => {
+      const distanceToTreat = Math.sqrt(
+        (pug.getPosition().x - treat.getPosition().x) ** 2 +
+          (pug.getPosition().y - treat.getPosition().y) ** 2
+      );
+
+      if (distanceToTreat < 50) {
+        const xDist = treat.getPosition().x - pug.getPosition().x;
+        const yDist = treat.getPosition().y - pug.getPosition().y;
+
+        pug.jump(yDist < 0 && yDist > -20 && Math.abs(xDist) < 10);
+
+        pug.setSpeed(xDist / 10);
+      }
+
+      // Maybe the pug shuld eat the treat if it is close enough?
+
+      /*  if (distanceToTreat < 10) {
+        treats.setTreats(treats.getTreats().filter((t) => t !== treat));
+        treatToPick = null;
+      } */
+    });
 
     let newSpeed = pug.getSpeed() * 0.95;
 
     if (Math.abs(newSpeed) < 0.2) newSpeed = 0;
-
     pug.setSpeed(newSpeed);
+
     level.setSpeed(speed);
   };
 
@@ -73,7 +108,9 @@ const initGame = (canvas: HTMLCanvasElement) => {
 
     level.render(ctx);
     pug.render(ctx);
-    bone.render(ctx);
+
+    treats.render(ctx);
+    hand.render(ctx);
   };
 
   const loop = () => {
