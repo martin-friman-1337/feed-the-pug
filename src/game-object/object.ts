@@ -1,9 +1,11 @@
 import { GameObject, Position } from "../types/game-object";
 import { Sprite } from "../types/sprite";
 
-export const createGameObject = (sprite: Sprite): GameObject => {
-  let position: Position = { x: 0, y: 0 };
-  let speed = 0;
+export const createGameObject = (
+  sprite: Sprite,
+  speed = 0,
+  position: Position = { x: 0, y: 0 }
+): GameObject => {
   let dir = 0;
 
   const setPosition = (newPosition: Position) => {
@@ -33,7 +35,7 @@ export const createGameObject = (sprite: Sprite): GameObject => {
 
     ctx.drawImage(
       sprite.image,
-      sprite.currentFrame * sprite.width,
+      sprite.getCurrentFrame() * sprite.width,
       0,
       sprite.width,
       sprite.height,
@@ -45,9 +47,11 @@ export const createGameObject = (sprite: Sprite): GameObject => {
 
     ctx.restore();
 
+    if (!sprite.animate) return;
+
     const now = Date.now();
     if (now - sprite.lastUpdate > sprite.delay) {
-      sprite.currentFrame = (sprite.currentFrame + 1) % sprite.numFrames;
+      sprite.setCurrentFrame((sprite.getCurrentFrame() + 1) % sprite.numFrames);
       sprite.lastUpdate = now;
     }
   };

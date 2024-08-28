@@ -7,10 +7,17 @@ export const createSprite = (
   numFrames = 1,
   delay = 100,
   currentFrame = 1,
-  lastUpdate = 0
+  lastUpdate = 0,
+  animate = true
 ): Sprite => {
   const image = new Image();
   image.src = src;
+
+  const getCurrentFrame = () => currentFrame;
+
+  const setCurrentFrame = (frame: number) => {
+    currentFrame = frame;
+  };
 
   return {
     image,
@@ -18,7 +25,9 @@ export const createSprite = (
     height,
     numFrames,
     delay,
-    currentFrame,
+    getCurrentFrame,
+    setCurrentFrame,
     lastUpdate,
+    animate,
   };
 };

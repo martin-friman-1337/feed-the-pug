@@ -15,6 +15,22 @@ export const createLevel = () => {
     y: 273,
   });
 
+  const turd = createGameObject(
+    createSprite("./sprites/turd.png", 16, 16, 7, 100)
+  );
+  turd.setPosition({
+    x: 200,
+    y: 286,
+  });
+
+  const coin = createGameObject(
+    createSprite("./sprites/coin.png", 8, 8, 8, 100)
+  );
+  coin.setPosition({
+    x: 300,
+    y: 286,
+  });
+
   let speed = 0;
 
   for (let i = 0; i < 10; i++) {
@@ -33,6 +49,18 @@ export const createLevel = () => {
     });
 
     dogHouse.render(ctx);
+
+    turd.setPosition({
+      x: turd.getPosition().x - speed,
+      y: turd.getPosition().y,
+    });
+    turd.render(ctx);
+
+    coin.setPosition({
+      x: coin.getPosition().x - speed,
+      y: coin.getPosition().y,
+    });
+    //  coin.render(ctx);
 
     groundObjects.forEach((ground) => {
       ground.setPosition({
