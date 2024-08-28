@@ -61,6 +61,7 @@ export const createPug = (position: Position) => {
     }
 
     if (pug) {
+
       pug.setDir(dir);
       pug.render(ctx);
     }
@@ -74,12 +75,17 @@ export const createPug = (position: Position) => {
     if (!pug) return { x: 0, y: 0 };
     return pug.getPosition();
   };
+  const setPosition = (newPosition: Position) => {
+    position = newPosition;
+    console.log(position, "wat");
+  };
 
   return {
     setSpeed,
     getSpeed,
     render,
     getPosition,
+    setPosition,
     jump,
   } as Pug;
 };

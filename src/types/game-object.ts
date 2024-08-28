@@ -6,6 +6,7 @@ export type Position = {
 };
 
 export type GameObject = {
+  clientId?: string,
   render: (ctx: CanvasRenderingContext2D) => void;
   setPosition: (position: Position) => void;
   getPosition: () => Position;
