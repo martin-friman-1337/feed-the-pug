@@ -3,12 +3,13 @@ import { createSprite } from "../game-object/sprite";
 import { GameObject, Position } from "../types/game-object";
 import { Pug } from "../types/pug";
 
-export const createPug = (position: Position) => {
+export const createPug = (initialPosition: Position) => {
   let pug: GameObject;
   let speed = 0;
   let dir = 1;
   let stillTime = 1000;
   let isJumping = false;
+  let position = initialPosition;
 
   const runSprite = createSprite("./sprites/pug-run.png", 16, 16, 3, 80);
   const runningPug = createGameObject(runSprite);
@@ -52,16 +53,22 @@ export const createPug = (position: Position) => {
 
     if (speed !== 0) {
       stillTime = 0;
+
     } else {
       stillTime += 1;
     }
-
     if (stillTime > 100) {
       pug = sittingPug;
     }
 
     if (pug) {
-
+        const newPos = {
+          x: position.x + speed,
+          y: position.y,
+        }
+        position = newPos;
+        pug.setPosition(newPos);
+      
       pug.setDir(dir);
       pug.render(ctx);
     }
@@ -73,11 +80,7 @@ export const createPug = (position: Position) => {
 
   const getPosition = () => {
     if (!pug) return { x: 0, y: 0 };
-    return pug.getPosition();
-  };
-  const setPosition = (newPosition: Position) => {
-    position = newPosition;
-    console.log(position, "wat");
+    return position;
   };
 
   return {
@@ -85,7 +88,6 @@ export const createPug = (position: Position) => {
     getSpeed,
     render,
     getPosition,
-    setPosition,
     jump,
   } as Pug;
 };

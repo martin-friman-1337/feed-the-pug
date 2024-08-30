@@ -31,6 +31,7 @@ const initGame = async (canvas: HTMLCanvasElement) => {
     y: 286,
   });
 
+
   const level = createLevel();
 
   const hand = createGameObject(
@@ -38,19 +39,10 @@ const initGame = async (canvas: HTMLCanvasElement) => {
   );
 
   const update = () => {
-        //broadcast my location    
-    console.log(pug.getPosition());
     socket.emit("broadcastMyLocation", {...pug.getPosition(), playerId:socket.id } as LocationData);
-    bone.setPosition({
-      x:
-        (canvas.width * mousePosition.x) / window.innerWidth -
-        bone.sprite.width / 2,
-      y: (canvas.height * mousePosition.y) / window.innerHeight,
-    });
-
     treats.update(pug);
     const speed = pug.getSpeed();
-
+      
     const pointingFingerPosition = tracker.getPointingFingerPosition();
 
     hand.setPosition({
@@ -58,6 +50,7 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       y: canvas.height * pointingFingerPosition.y,
     });
 
+  
     if (tracker.isPicking()) {
       hand.sprite.setCurrentFrame(0);
     } else {
@@ -85,7 +78,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
 
     if (!tracker.isPicking()) {
     }
-
     treats.getTreats().forEach((treat) => {
       const distanceToTreat = Math.sqrt(
         (pug.getPosition().x - treat.getPosition().x) ** 2 +
@@ -95,7 +87,7 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       if (distanceToTreat < 50) {
         const xDist = treat.getPosition().x - pug.getPosition().x;
         const yDist = treat.getPosition().y - pug.getPosition().y;
-
+        console.log('we are close enough to a treat to move towards it');
         pug.jump(yDist < 0 && yDist > -20 && Math.abs(xDist) < 10);
 
         pug.setSpeed(xDist / 10);
@@ -103,18 +95,22 @@ const initGame = async (canvas: HTMLCanvasElement) => {
 
       // Maybe the pug shuld eat the treat if it is close enough?
 
-      /*  if (distanceToTreat < 10) {
+       if (distanceToTreat < 10) {
+        console.log('eating treats');
+        pug.jump(false);// reset jumping animation
+        pug.setSpeed(0); // this was causing issues wihh the treats. not sure why
         treats.setTreats(treats.getTreats().filter((t) => t !== treat));
         treatToPick = null;
-      } */
+      } 
     });
+
+
 
     let newSpeed = pug.getSpeed() * 0.95;
 
     if (Math.abs(newSpeed) < 0.2) newSpeed = 0;
     pug.setSpeed(newSpeed);
-
-    level.setSpeed(speed);
+    level.setSpeed(speed / 2);
   };
 
   const draw = () => {

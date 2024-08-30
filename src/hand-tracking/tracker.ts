@@ -20,7 +20,7 @@ export default async function createTracker() {
   video.style.transform = "scale(-1,1)";
   video.style.opacity = "0.2";
 
-  document.body.append(video);
+  //document.body.append(video);
 
   video.autoplay = true;
   video.width = 640;
@@ -57,6 +57,7 @@ export default async function createTracker() {
     runningMode: "VIDEO",
     baseOptions: {
       modelAssetPath: "models/hand_landmarker.task",
+      delegate: "GPU"
     },
     numHands: 2,
   });

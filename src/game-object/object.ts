@@ -25,14 +25,12 @@ export const createGameObject = (
   };
 
   const render = (ctx: CanvasRenderingContext2D) => {
-    ctx.save();
-
+    ctx.save();  
     ctx.translate(
       Math.floor(position.x + (dir === 1 ? sprite.width : 0)),
       Math.floor(position.y)
     );
     ctx.scale(dir === 1 ? -1 : 1, 1);
-
     ctx.drawImage(
       sprite.image,
       sprite.getCurrentFrame() * sprite.width,
@@ -54,7 +52,8 @@ export const createGameObject = (
       sprite.setCurrentFrame((sprite.getCurrentFrame() + 1) % sprite.numFrames);
       sprite.lastUpdate = now;
     }
-  };
+  
+}
 
   return {
     render,
