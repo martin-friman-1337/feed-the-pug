@@ -1,11 +1,14 @@
 import { createGameObject } from "./game-object/object";
 import { createSprite } from "./game-object/sprite";
+import { getOtherPlayersFromClientStore, getPoopFromClientStore } from "./stores/gameState";
 import { GameObject } from "./types/game-object";
 
 export const createLevel = () => {
   const groundSpprite = createSprite("./sprites/ground.png", 144, 17, 1, 100);
 
   const groundObjects: GameObject[] = [];
+
+
 
   const dogHouse = createGameObject(
     createSprite("./sprites/dog-house.png", 48, 32, 1, 100)
@@ -15,21 +18,33 @@ export const createLevel = () => {
     y: 273,
   });
 
-  const turd = createGameObject(
-    createSprite("./sprites/turd.png", 16, 16, 7, 100)
-  );
-  turd.setPosition({
-    x: 200,
-    y: 286,
+  let turds: GameObject[] = [];
+  getPoopFromClientStore().forEach(poop =>{
+    const turd = createGameObject(
+      createSprite("./sprites/turd.png", 16, 16, 7, 100)
+    );
+    turd.setPosition({
+      x: poop.position.x,
+      y: poop.position.y,
+    });
+    turds.push(turd);
   });
 
-  const coin = createGameObject(
-    createSprite("./sprites/coin.png", 8, 8, 8, 100)
-  );
-  coin.setPosition({
-    x: 300,
-    y: 286,
+  const stillSprite = createSprite("./sprites/pug-still.png", 16, 16, 2, 200);
+  const stillPug = createGameObject(stillSprite);
+  let otherPugs: GameObject[] = [];
+
+  getOtherPlayersFromClientStore().forEach(player =>{
+    const puggo = stillPug;
+    puggo.setSpeed(player.pug.speed!);
+    puggo.setDir(player.pug.dir!);
+    puggo.setPosition({
+      x: player.pug.position.x,
+      y: player.pug.position.y,
+    });
+    otherPugs.push(puggo);
   });
+
 
   let speed = 0;
 
@@ -50,17 +65,21 @@ export const createLevel = () => {
 
     dogHouse.render(ctx);
 
-    turd.setPosition({
-      x: turd.getPosition().x - speed,
-      y: turd.getPosition().y,
-    });
-    turd.render(ctx);
+    turds.forEach(t =>{
+      t.setPosition({
+        x: t.getPosition().x - speed,
+        y: t.getPosition().y,
+      });
+      t.render(ctx)
+    })
 
-    coin.setPosition({
-      x: coin.getPosition().x - speed,
-      y: coin.getPosition().y,
-    });
-    //  coin.render(ctx);
+    otherPugs.forEach(op =>{
+      op.setPosition({
+        x: op.getPosition().x - speed,
+        y: op.getPosition().y,
+      });
+      op.render(ctx)
+    })
 
     groundObjects.forEach((ground) => {
       ground.setPosition({

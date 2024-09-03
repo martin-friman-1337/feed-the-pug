@@ -1,5 +1,7 @@
+import { IEatPoop, IEatTreat, IMovePlayerPugPosition } from "../events-manager/action-types/pug";
 import { createGameObject } from "../game-object/object";
 import { createSprite } from "../game-object/sprite";
+import { socket } from "../socketio-client";
 import { GameObject, Position } from "../types/game-object";
 import { Pug } from "../types/pug";
 
@@ -68,9 +70,16 @@ export const createPug = (initialPosition: Position) => {
         }
         position = newPos;
         pug.setPosition(newPos);
-      
+        
       pug.setDir(dir);
       pug.render(ctx);
+      emitPlayerPugPositionToServer({
+        position,
+        direction: dir,
+        speed: speed,
+        playerId: socket.id!,
+        actionOrderNumber: 0
+      });
     }
   };
 
@@ -82,6 +91,20 @@ export const createPug = (initialPosition: Position) => {
     if (!pug) return { x: 0, y: 0 };
     return position;
   };
+  
+
+  const emitPlayerPugPositionToServer = (eventActionData: IMovePlayerPugPosition ) => {
+    socket.emit("clientBroadcastPugLocation", {...eventActionData}); 
+  }
+
+  const emitPlayerPugEatTreat = (eventActionData: IEatTreat) => {
+    socket.emit("broadcastPlayerPugEatTreat", {...eventActionData}); 
+  }
+
+  const emitPlayerPugEatPoop = (eventActionData: IEatPoop) => {
+    socket.emit("broadcastPlayerPugEatPoop", {...eventActionData}); 
+  }
+
 
   return {
     setSpeed,

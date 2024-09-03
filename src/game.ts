@@ -3,12 +3,11 @@ import { createSprite } from "./game-object/sprite";
 import createTracker from "./hand-tracking/tracker";
 import { createLevel } from "./level";
 import { createPug } from "./pug/pug";
-import { socket } from "./socketio-client";
-import { ConnectedClient } from "./socketio-client/types";
-import { currentlyConnectedClients } from "./stores/players";
-import {LocationData} from './socketio-client/types';
+import { fetchInitialGameState } from "./stores/gameState";
 import { createTreats } from "./treats";
 import { GameObject } from "./types/game-object";
+
+
 
 
 export const getCtx = (canvas: HTMLCanvasElement) => {
@@ -19,19 +18,19 @@ export const getCtx = (canvas: HTMLCanvasElement) => {
 
 const initGame = async (canvas: HTMLCanvasElement) => {
   const ctx = getCtx(canvas);
-
+  await fetchInitialGameState();
   const tracker = await createTracker();
 
   const treats = createTreats();
-
   let treatToPick: GameObject | null = null;
+
 
   const pug = createPug({
     x: Math.floor(canvas.width / 2) - 8,
     y: 286,
   });
 
-
+ 
   const level = createLevel();
 
   const hand = createGameObject(
@@ -39,7 +38,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
   );
 
   const update = () => {
-    socket.emit("broadcastMyLocation", {...pug.getPosition(), playerId:socket.id } as LocationData);
     treats.update(pug);
     const speed = pug.getSpeed();
       
@@ -49,8 +47,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       x: canvas.width * pointingFingerPosition.x,
       y: canvas.height * pointingFingerPosition.y,
     });
-
-  
     if (tracker.isPicking()) {
       hand.sprite.setCurrentFrame(0);
     } else {
@@ -107,7 +103,7 @@ const initGame = async (canvas: HTMLCanvasElement) => {
 
 
     let newSpeed = pug.getSpeed() * 0.95;
-
+    
     if (Math.abs(newSpeed) < 0.2) newSpeed = 0;
     pug.setSpeed(newSpeed);
     level.setSpeed(speed / 2);
@@ -117,19 +113,8 @@ const initGame = async (canvas: HTMLCanvasElement) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     level.render(ctx);
-
-    //render other players from connected client store
-    currentlyConnectedClients.forEach((client:ConnectedClient)=>{
-      const newPug = createPug({
-        x: client.position.x,
-        y: client.position.y
-      });
-      newPug.render(ctx);
-    });
-
     //render our players pug
     pug.render(ctx);
-
     treats.render(ctx);
     hand.render(ctx);
   };
