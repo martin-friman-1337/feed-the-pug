@@ -1,8 +1,7 @@
 import { Position } from "./game-object";
 
 export type GameState = {
-    clientPlayer: IPlayer;
-    otherPlayers: IPlayer[];
+    players: IPlayer[];
     treats: ITreat[];
     poop: IPoop[];
 }

@@ -6,8 +6,8 @@ import { createPug } from "./pug/pug";
 import { fetchInitialGameState } from "./stores/gameState";
 import { createTreats } from "./treats";
 import { GameObject } from "./types/game-object";
-
-
+import { IMovePlayerPugPosition } from "./events-manager/action-types/pug";
+import { socket } from "./socketio-client";
 
 
 export const getCtx = (canvas: HTMLCanvasElement) => {
@@ -18,6 +18,8 @@ export const getCtx = (canvas: HTMLCanvasElement) => {
 
 const initGame = async (canvas: HTMLCanvasElement) => {
   const ctx = getCtx(canvas);
+    //tell the server we're spawning -- this is a temp solution. in reality, the client should "request to spawn, and get a spawn location returned to it"
+    socket.emit("clientBroascastInitialLocation",{position: {x:Math.floor(canvas.width / 2) - 8, y: 286}, speed:0, direction:1} as IMovePlayerPugPosition ); 
   await fetchInitialGameState();
   const tracker = await createTracker();
 
@@ -36,7 +38,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
   const hand = createGameObject(
     createSprite("./sprites/hand.png", 24, 24, 3, 100, 2, 0, false)
   );
-
   const update = () => {
     treats.update(pug);
     const speed = pug.getSpeed();
@@ -83,7 +84,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       if (distanceToTreat < 50) {
         const xDist = treat.getPosition().x - pug.getPosition().x;
         const yDist = treat.getPosition().y - pug.getPosition().y;
-        console.log('we are close enough to a treat to move towards it');
         pug.jump(yDist < 0 && yDist > -20 && Math.abs(xDist) < 10);
 
         pug.setSpeed(xDist / 10);
@@ -92,7 +92,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       // Maybe the pug shuld eat the treat if it is close enough?
 
        if (distanceToTreat < 10) {
-        console.log('eating treats');
         pug.jump(false);// reset jumping animation
         pug.setSpeed(0); // this was causing issues wihh the treats. not sure why
         treats.setTreats(treats.getTreats().filter((t) => t !== treat));
@@ -111,13 +110,21 @@ const initGame = async (canvas: HTMLCanvasElement) => {
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  
     level.render(ctx);
-    //render our players pug
+    
+    // Render our player's pug
     pug.render(ctx);
+  
+    // Render text above your pug
+    ctx.font = "12px mono";
+    ctx.fillText("your pug", pug.getPosition().x - 10, pug.getPosition().y);
+  
+    // Render treats and hand
     treats.render(ctx);
     hand.render(ctx);
   };
+  
 
 
   const loop = () => {

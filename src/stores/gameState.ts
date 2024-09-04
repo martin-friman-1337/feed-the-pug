@@ -1,25 +1,9 @@
+import { socket } from "../socketio-client";
 import { GAME_OBJECT_TYPE, GameState, IPlayer, IPoop, ITreat } from "../types/game-state";
 
 // Initialize the game state
 let gameState: GameState = {
-    clientPlayer: {
-        playerId: "",
-        pug: {
-            objectId: 0,
-            position: { x: 0, y: 0 },
-            objectType: GAME_OBJECT_TYPE.PUG,
-            playerId: "",
-            dir: 0,
-            speed: 0
-        },
-        hand: {
-            objectId: 0,
-            position: { x: 0, y: 0 },
-            objectType: GAME_OBJECT_TYPE.HAND,
-            playerId: "",
-        }
-    },
-    otherPlayers: [],
+    players:[],
     treats: [],
     poop: []
 };
@@ -45,9 +29,14 @@ export function updateGameState(newGameState: GameState) {
     gameState = newGameState;
 }
 
+
+export function getPlayerGameStateByClientId(clientId: string):IPlayer | undefined {
+    return gameState.players.find((player)=> player.playerId == clientId); // return a filtered players list that ignores ourselves
+}
+
 // Retrieve other players from the client store
 export function getOtherPlayersFromClientStore(): IPlayer[] {
-    return gameState.otherPlayers;
+    return gameState.players.filter((player)=> player.playerId != socket.id); // return a filtered players list that ignores ourselves
 }
 
 // Retrieve treats from the client store

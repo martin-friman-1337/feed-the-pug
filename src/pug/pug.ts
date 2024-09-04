@@ -49,6 +49,13 @@ export const createPug = (initialPosition: Position) => {
   };
 
   const render = (ctx: CanvasRenderingContext2D) => {
+    emitPlayerPugPositionToServer({
+      position,
+      direction: dir,
+      speed: speed,
+      playerId: socket.id!,
+      actionOrderNumber: 0
+    });
     if (isJumping) {
       pug = jumpingPug;
     }
@@ -73,13 +80,7 @@ export const createPug = (initialPosition: Position) => {
         
       pug.setDir(dir);
       pug.render(ctx);
-      emitPlayerPugPositionToServer({
-        position,
-        direction: dir,
-        speed: speed,
-        playerId: socket.id!,
-        actionOrderNumber: 0
-      });
+      
     }
   };
 
@@ -91,7 +92,6 @@ export const createPug = (initialPosition: Position) => {
     if (!pug) return { x: 0, y: 0 };
     return position;
   };
-  
 
   const emitPlayerPugPositionToServer = (eventActionData: IMovePlayerPugPosition ) => {
     socket.emit("clientBroadcastPugLocation", {...eventActionData}); 
