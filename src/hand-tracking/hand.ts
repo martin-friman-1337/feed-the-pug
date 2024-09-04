@@ -9,4 +9,6 @@ export const createHand = (position: Position) => {
     createSprite("./sprites/hand.png", 24, 24, 3, 100, 2, 0, false)
   );
   hand.setPosition(position);
+
+  return hand;
 };

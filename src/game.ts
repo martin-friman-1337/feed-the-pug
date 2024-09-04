@@ -3,12 +3,11 @@ import { createSprite } from "./game-object/sprite";
 import createTracker from "./hand-tracking/tracker";
 import { createLevel } from "./level";
 import { createPug } from "./pug/pug";
-import { socket } from "./socketio-client";
-import { ConnectedClient } from "./socketio-client/types";
-import { currentlyConnectedClients } from "./stores/players";
-import {LocationData} from './socketio-client/types';
+import { fetchInitialGameState } from "./stores/gameState";
 import { createTreats } from "./treats";
 import { GameObject } from "./types/game-object";
+import { IMovePlayerPugPosition } from "./events-manager/action-types/pug";
+import { socket } from "./socketio-client";
 
 
 export const getCtx = (canvas: HTMLCanvasElement) => {
@@ -19,27 +18,27 @@ export const getCtx = (canvas: HTMLCanvasElement) => {
 
 const initGame = async (canvas: HTMLCanvasElement) => {
   const ctx = getCtx(canvas);
-
+    //tell the server we're spawning -- this is a temp solution. in reality, the client should "request to spawn, and get a spawn location returned to it"
+    socket.emit("clientBroascastInitialLocation",{position: {x:Math.floor(canvas.width / 2) - 8, y: 286}, speed:0, direction:1} as IMovePlayerPugPosition ); 
+  await fetchInitialGameState();
   const tracker = await createTracker();
 
   const treats = createTreats();
-
   let treatToPick: GameObject | null = null;
+
 
   const pug = createPug({
     x: Math.floor(canvas.width / 2) - 8,
     y: 286,
   });
 
-
+ 
   const level = createLevel();
 
   const hand = createGameObject(
     createSprite("./sprites/hand.png", 24, 24, 3, 100, 2, 0, false)
   );
-
   const update = () => {
-    socket.emit("broadcastMyLocation", {...pug.getPosition(), playerId:socket.id } as LocationData);
     treats.update(pug);
     const speed = pug.getSpeed();
       
@@ -49,8 +48,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       x: canvas.width * pointingFingerPosition.x,
       y: canvas.height * pointingFingerPosition.y,
     });
-
-  
     if (tracker.isPicking()) {
       hand.sprite.setCurrentFrame(0);
     } else {
@@ -87,7 +84,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       if (distanceToTreat < 50) {
         const xDist = treat.getPosition().x - pug.getPosition().x;
         const yDist = treat.getPosition().y - pug.getPosition().y;
-        console.log('we are close enough to a treat to move towards it');
         pug.jump(yDist < 0 && yDist > -20 && Math.abs(xDist) < 10);
 
         pug.setSpeed(xDist / 10);
@@ -96,7 +92,6 @@ const initGame = async (canvas: HTMLCanvasElement) => {
       // Maybe the pug shuld eat the treat if it is close enough?
 
        if (distanceToTreat < 10) {
-        console.log('eating treats');
         pug.jump(false);// reset jumping animation
         pug.setSpeed(0); // this was causing issues wihh the treats. not sure why
         treats.setTreats(treats.getTreats().filter((t) => t !== treat));
@@ -107,7 +102,7 @@ const initGame = async (canvas: HTMLCanvasElement) => {
 
 
     let newSpeed = pug.getSpeed() * 0.95;
-
+    
     if (Math.abs(newSpeed) < 0.2) newSpeed = 0;
     pug.setSpeed(newSpeed);
     level.setSpeed(speed / 2);
@@ -115,24 +110,21 @@ const initGame = async (canvas: HTMLCanvasElement) => {
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  
     level.render(ctx);
-
-    //render other players from connected client store
-    currentlyConnectedClients.forEach((client:ConnectedClient)=>{
-      const newPug = createPug({
-        x: client.position.x,
-        y: client.position.y
-      });
-      newPug.render(ctx);
-    });
-
-    //render our players pug
+    
+    // Render our player's pug
     pug.render(ctx);
-
+  
+    // Render text above your pug
+    ctx.font = "12px mono";
+    ctx.fillText("your pug", pug.getPosition().x - 10, pug.getPosition().y);
+  
+    // Render treats and hand
     treats.render(ctx);
     hand.render(ctx);
   };
+  
 
 
   const loop = () => {

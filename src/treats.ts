@@ -33,7 +33,7 @@ export const createTreats = () => {
           : 300 - treat.sprite.height / 2;
 
       treat.setPosition({
-        x: treat.getPosition().x - pug.getSpeed(),
+        x: treat.getPosition().x,
         y: yPos,
       });
     });
